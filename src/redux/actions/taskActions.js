@@ -3,7 +3,6 @@ import {
     EDIT_TASK,
     CANCEL_TASK,
     COMPLETE_TASK,
-    UNCOMPLETE_TASK
 } from "../constants";
 
 let id = 0;

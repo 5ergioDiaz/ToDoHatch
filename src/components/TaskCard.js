@@ -1,8 +1,12 @@
+/**
+ * TaskCard Component
+ * @author Sergio Julian Diaz Topete
+ */
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 
-const { width, height } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 
 function taskCard(props) {
     const { taskStatus, taskName, checkProp, editProp } = props;

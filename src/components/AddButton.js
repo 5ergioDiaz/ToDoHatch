@@ -1,8 +1,13 @@
+/**
+ * Add Button Component
+ * @author Sergio Julian Diaz Topete
+ */
+
 import React from 'react';
-import { View, Dimensions, TouchableOpacity } from 'react-native';
+import { Dimensions, TouchableOpacity } from 'react-native';
 import Fontisto from 'react-native-vector-icons/Fontisto'
 
-const { width, height } = Dimensions.get("screen");
+const { height } = Dimensions.get("screen");
 
 function taskCard(props) {
     const { onPress } = props;
@@ -15,7 +20,7 @@ function taskCard(props) {
                 position: 'absolute',
                 alignItems: 'center',
                 bottom: height * 0.1,
-                right:0,
+                right: 0,
                 justifyContent: 'center',
                 width: 80,
                 height: 80,
