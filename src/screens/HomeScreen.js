@@ -1,24 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Modal, TextInput, PermissionsAndroid } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Modal, TextInput, PermissionsAndroid, FlatList, TouchableWithoutFeedback, Button } from 'react-native';
+
+import { connect } from 'react-redux';
+import { addTask, cancelTask, editTask, completeTask } from '../redux/actions/taskActions';
+import Geolocation from 'react-native-geolocation-service';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Fontisto from 'react-native-vector-icons/Fontisto'
 import TaskCard from '../components/TaskCard';
 import AppBar from '../components/AppBar'
 import AddButton from '../components/AddButton'
-import Button from '../components/Button'
+import Button1 from '../components/Button'
+import { current } from 'immer';
+import moment from 'moment';
 
 const { width, height } = Dimensions.get("screen");
+const allTasksProps = (state) => {
+    return {
+        allTasks: state.AllTaskReducers.allTasks,
+    }
+}
+const propsDispatch = { addTask}
 
-const HomeScreen = ({ }) => {
+const HomeScreen = ({ allTasks}) => {
+
     const [modal, setModal] = useState(false)
 
     useEffect(() => {
-
         PermissionsAndroid.requestMultiple([
             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
             PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
         ]).then(async (resp) => {
-            console.log(resp)
             if (
                 resp['android.permission.ACCESS_FINE_LOCATION'] &&
                 resp['android.permission.ACCESS_COARSE_LOCATION'] === "granted"
@@ -33,67 +46,55 @@ const HomeScreen = ({ }) => {
                 await AsyncStorage.setItem("@location_permissions", "true");
             }
         })
-
     }, []);
 
+   
     return (
 
         <View style={{ height }}>
             <AppBar />
             <AddButton onPress={() => { setModal(true) }} />
 
-            <TaskCard taskName={"HOLA"} taskStatus={0} />
-
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modal}
-            >
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <Text style={{
-                            fontWeight: 'bold',
-                            fontSize: 20
-                        }}>Nueva Tarea</Text>
-
-                        <TextInput
-                            placeholder={'Nombre de la Tarea'}
-                            placeholderTextColor={'black'}
-                            style={{ height: 60, width: '90%', borderColor: 'blue', borderWidth: 2, borderRadius: 10, color: 'black', marginBottom: 30 }}
-                        />
-
-                        <Button
-                            label={"Agregar"}
-                            backgroundColor={'red'}
-                            borderRadius={10}
-                            width={"90%"}
-                            onPress={() => { setModal(false) }}
-                            height={40}
-                            fontSize={25}
-                        />
-
+            {allTasks &&
+                allTasks.map((task, index) => (
+                    <View key={index} style={{ backgroundColor: 'grey', height: height / 15, width: '90%', marginBottom: 20, borderRadius: 10, alignSelf: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignContent: 'space-between', marginTop: 20, marginLeft: 30 }}>
+                            <TouchableOpacity style={{ alignContent: 'flex-start', width: '20%' }}
+                                onPress={() => { submitStatusChange(index) }}>
+                                <View style={{
+                                    backgroundColor: task.taskInfo.isComplete ? 'blue' : 'transparent',
+                                    borderWidth: 3,
+                                    borderColor: 'blue',
+                                    width: 20,
+                                    height: 20
+                                }} />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={{ flexDirection: 'row', width: '80%' }} onPress={() => { handleEdit(index) }}>
+                                <View style={{ width: "80%" }}>
+                                    <Text numberOfLines={1} style={{ fontSize: 20 }}>{task.taskInfo.title ? task.taskInfo.title : `Tarea ${task.id}`}</Text>
+                                </View>
+                                <View style={{ alignContent: 'flex-end', width: '20%' }}>
+                                    <MaterialIcons name='arrow-forward-ios' size={20} />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
-            </Modal>
-
-        </View>
-    )
-
+                ))
+            }
+           </View>
+    );
 }
-
-export default HomeScreen;
 
 const styles = StyleSheet.create({
     centeredView: {
         flex: 1,
         justifyContent: 'flex-end',
-        margin: 0
+        margin: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
     },
     modalView: {
         backgroundColor: 'white',
         padding: 22,
-        justifyContent: 'center',
-        alignItems: 'center',
         borderTopRightRadius: 17,
         borderTopLeftRadius: 17,
     },
@@ -118,3 +119,9 @@ const styles = StyleSheet.create({
         textAlign: "center"
     }
 });
+
+export default connect(
+    allTasksProps,
+    propsDispatch
+)(HomeScreen)
+
