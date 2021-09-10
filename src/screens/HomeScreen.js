@@ -21,14 +21,15 @@ const allTasksProps = (state) => {
         allTasks: state.AllTaskReducers.allTasks,
     }
 }
-const propsDispatch = { addTask, editTask}
+const propsDispatch = { addTask, cancelTask, editTask, completeTask }
 
-const HomeScreen = ({ allTasks, addTask, editTask}) => {
+const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) => {
 
     const [taskName, setTaskName] = useState(null)
     const [taskNameEdit, setTaskNameEdit] = useState(null)
     const [modal, setModal] = useState(false)
     const [modalUpdate, setModalUpdate] = useState(false)
+    const [modalConfirmCancel, setModalConfirmCancel] = useState(false)
     const currentEdit = useRef(null)
     const currentIndex = useRef(null)
 
@@ -78,6 +79,12 @@ const HomeScreen = ({ allTasks, addTask, editTask}) => {
         currentEdit.current = allTasks[index]
         setTaskNameEdit(currentEdit.current.taskInfo.title)
         setModalUpdate(true)
+    }
+
+    const submitStatusChange = (index) => {
+        currentEdit.current = allTasks[index]
+        completeTask([index, !currentEdit.current.taskInfo.isComplete])
+        setModalUpdate(false)
     }
 
     const submitEdit = () => {
