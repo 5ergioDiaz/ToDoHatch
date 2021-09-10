@@ -16,6 +16,22 @@ export const addTask = taskInfo => ({
     }
 });
 
+export const editTask = taskInfo => ({
+    type: EDIT_TASK,
+    data: {
+        id,
+        taskInfo
+    }
+});
+
+export const completeTask = taskInfo => ({
+    type: COMPLETE_TASK,
+    data: {
+        id,
+        taskInfo
+    }
+});
+
 export const cancelTask = id => ({
     type: CANCEL_TASK,
     data: {

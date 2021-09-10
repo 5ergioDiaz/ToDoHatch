@@ -21,11 +21,16 @@ const allTasksProps = (state) => {
         allTasks: state.AllTaskReducers.allTasks,
     }
 }
-const propsDispatch = { addTask}
+const propsDispatch = { addTask, editTask}
 
-const HomeScreen = ({ allTasks, addTask}) => {
+const HomeScreen = ({ allTasks, addTask, editTask}) => {
 
     const [taskName, setTaskName] = useState(null)
+    const [taskNameEdit, setTaskNameEdit] = useState(null)
+    const [modal, setModal] = useState(false)
+    const [modalUpdate, setModalUpdate] = useState(false)
+    const currentEdit = useRef(null)
+    const currentIndex = useRef(null)
 
     useEffect(() => {
         PermissionsAndroid.requestMultiple([
@@ -68,6 +73,40 @@ const HomeScreen = ({ allTasks, addTask}) => {
         );
     }
 
+    const handleEdit = (index) => {
+        currentIndex.current = index
+        currentEdit.current = allTasks[index]
+        setTaskNameEdit(currentEdit.current.taskInfo.title)
+        setModalUpdate(true)
+    }
+
+    const submitEdit = () => {
+        if (taskNameEdit && taskNameEdit > 1) {
+            editTask([currentIndex.current, {
+                id: currentEdit.current.id, taskInfo: {
+                    title: taskNameEdit ? taskNameEdit : currentEdit.current.taskInfo.title,
+                    isComplete: currentEdit.current.taskInfo.isComplete,
+                    createDateTime: currentEdit.current.taskInfo.createDateTime,
+                    lastUpdate: moment().format('MMMM Do YYYY, h:mm:ss a'),
+                    location: currentEdit.current.taskInfo.location
+                }
+            }])
+            setModalUpdate(false)
+        }
+        else {
+            console.log("Tiene que ser mayor a 20")
+        }
+    }
+
+    const handleCancel = () => {
+        cancelTask(currentEdit.current.id)
+        setModalUpdate(false)
+        setModalConfirmCancel(false)
+    }
+
+    const cardTask = ({ item }) => (
+        <TaskCard />
+    );
 
     return (
 
@@ -135,7 +174,107 @@ const HomeScreen = ({ allTasks, addTask}) => {
                 </TouchableOpacity>
             </Modal>
 
+            {/* Modal Update */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalUpdate}
+                onRequestClose={() => { setModalUpdate(false) }}>
+                <TouchableOpacity style={styles.centeredView} onPress={() => { setModalUpdate(false) }}>
+                    <TouchableWithoutFeedback>
+                        <View style={styles.modalView}>
+                            <Text style={{ alignSelf: 'flex-start', fontWeight: 'bold' }}>Titulo de la Tarea</Text>
+                            <TextInput
+                                placeholder={'Nombre de la Tarea'}
+                                placeholderTextColor={'black'}
+                                style={{ height: 40, borderColor: "#3366FF", borderWidth: 2, borderRadius: 5, color: 'black', marginBottom: 30 }}
+                                onChangeText={setTaskNameEdit}
+                                value={taskNameEdit}
+                            />
 
+                            <View style={{ marginBottom: 10 }}>
+                                <Text style={{ alignSelf: 'flex-start', fontWeight: 'bold' }}>Fecha de Creacion</Text>
+                                <Text style={{ alignSelf: 'flex-start' }}>{currentEdit.current && currentEdit.current.taskInfo.createDateTime}</Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10 }}>
+                                <Text style={{ alignSelf: 'flex-start', fontWeight: 'bold' }}>Ultima Modificación</Text>
+                                <Text style={{ alignSelf: 'flex-start' }}>{currentEdit.current && currentEdit.current.taskInfo.lastUpdate}</Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10 }}>
+                                <Text style={{ alignSelf: 'flex-start', fontWeight: 'bold' }}>Status</Text>
+                                <Text style={{ alignSelf: 'flex-start' }}>{currentEdit.current && currentEdit.current.taskInfo.isComplete ? "Completado" : "Activo"}</Text>
+                            </View>
+
+                            <View style={{ marginBottom: 10 }}>
+                                <Text style={{ alignSelf: 'flex-start', fontWeight: 'bold' }}>Ubicación</Text>
+                                <Text style={{ alignSelf: 'flex-start' }}>Latitud: {currentEdit.current && currentEdit.current.taskInfo.location.lat}</Text>
+                                <Text style={{ alignSelf: 'flex-start' }}>Longitud: {currentEdit.current && currentEdit.current.taskInfo.location.lng}</Text>
+                            </View>
+
+                            <Button
+                                title="Guardar"
+                                color="#3366FF"
+                                onPress={submitEdit}
+                            />
+
+                            <View style={{ marginTop: 20 }}>
+                                <Button
+                                    title="Cancelar"
+                                    color="#FF493F"
+                                    onPress={() => { setModalConfirmCancel(true) }}
+                                />
+                            </View>
+
+                        </View>
+                    </TouchableWithoutFeedback>
+                </TouchableOpacity>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalConfirmCancel}
+            >
+                <TouchableOpacity style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginTop: 22,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)'
+                }} onPress={() => { setModalConfirmCancel(false) }}>
+                    <TouchableWithoutFeedback>
+                        <View style={{
+                            margin: 20,
+                            backgroundColor: "white",
+                            borderRadius: 20,
+                            padding: 35,
+                            alignItems: "center"
+                        }}>
+                            <Text style={{ fontWeight: 'bold' }}>Estas Seguro de Cancelar esta tarea?</Text>
+                            <Text style={{ fontWeight: 'bold' }}>No Podras Recuperarla</Text>
+                            <View style={{ marginTop: 20, justifyContent: 'space-between', flexDirection: 'row' }}>
+                                <View style={{ marginRight: 5 }}>
+                                    <Button
+                                        title="Cancelar"
+                                        color="grey"
+                                        onPress={() => { setModalConfirmCancel(false) }}
+                                    />
+                                </View>
+                                <View style={{ marginRight: 5 }}>
+                                    <Button
+                                        title="Aceptar"
+                                        color="#FF493F"
+                                        onPress={handleCancel}
+                                    />
+                                </View>
+                            </View>
+
+                        </View>
+                    </TouchableWithoutFeedback>
+                </TouchableOpacity>
+            </Modal>
         </View>
     );
 }
