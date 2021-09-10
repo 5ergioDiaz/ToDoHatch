@@ -4,17 +4,20 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
+import store from './src/redux/store';
+import { Provider } from 'react-redux';
 
 import HomeScreen from './src/screens/HomeScreen'
 
 const App = () => {
+
   return (
-    <SafeAreaView>
-      <StatusBar />
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
+    <Provider store={store}>
+      <SafeAreaView>
+        <StatusBar />
         <HomeScreen />
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </Provider>
   );
 };
 

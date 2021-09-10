@@ -11,6 +11,7 @@ function taskCard(props) {
             onPress={onPress}
             underlayColor="#2882D8"
             style={{
+                zIndex: 999,
                 position: 'absolute',
                 top: height * 0.85,
                 left: width * 0.78,
