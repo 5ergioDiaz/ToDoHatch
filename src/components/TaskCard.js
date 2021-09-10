@@ -7,8 +7,8 @@ const { width, height } = Dimensions.get("screen");
 function taskCard(props) {
     const { taskStatus, taskName, checkProp, editProp } = props;
     return (
-        <View style={{ backgroundColor: 'grey', height: height / 15, width: '90%', marginBottom: 20, borderRadius: 10, alignSelf: 'center' }}>
-            <View style={{ flexDirection: 'row', alignContent: 'space-between', marginTop: 20, marginLeft: 30 }}>
+        <View style={{ backgroundColor: 'grey', height: width * 0.15, width: '90%', marginBottom: 20, borderRadius: 10, alignSelf: 'center', alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ flexDirection: 'row', marginLeft: 30 }}>
                 <TouchableOpacity style={{ alignContent: 'flex-start', width: '20%' }}
                     onPress={checkProp}>
                     <View style={{
@@ -21,7 +21,7 @@ function taskCard(props) {
                 </TouchableOpacity>
                 <TouchableOpacity style={{ flexDirection: 'row', width: '80%' }} onPress={editProp}>
                     <View style={{ width: "80%" }}>
-                        <Text numberOfLines={1} style={{ fontSize: 20 }}>{taskName ? taskName : `Tarea`}</Text>
+                        <Text numberOfLines={1} style={{ fontSize: width * 0.05 }}>{taskName ? taskName : `Tarea`}</Text>
                     </View>
                     <View style={{ alignContent: 'flex-end', width: '20%' }}>
                         <MaterialIcons name='arrow-forward-ios' size={20} />

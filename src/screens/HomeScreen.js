@@ -1,68 +1,87 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Modal, TextInput, TouchableWithoutFeedback, Button } from 'react-native';
-
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Dimensions,
+    Modal,
+    TextInput,
+    TouchableWithoutFeedback,
+    Button,
+    Switch,
+    Alert
+} from 'react-native';
 import { connect } from 'react-redux';
 import { addTask, cancelTask, editTask, completeTask } from '../redux/actions/taskActions';
 import Geolocation from 'react-native-geolocation-service';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import TaskCard from '../components/TaskCard';
 import AppBar from '../components/AppBar'
 import AddButton from '../components/AddButton'
-import Button1 from '../components/Button'
 import moment from 'moment';
 
-const { width, height } = Dimensions.get("screen");
+const { height } = Dimensions.get("screen");
+
 const allTasksProps = (state) => {
     return {
         allTasks: state.home.AllTaskReducers.allTasks,
     }
 }
+
 const propsDispatch = { addTask, cancelTask, editTask, completeTask }
 
 const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) => {
 
     const [taskName, setTaskName] = useState(null)
     const [taskNameEdit, setTaskNameEdit] = useState(null)
-    const [modal, setModal] = useState(false)
+    const [filter, setFilter] = useState(1)
+
+    const [modalCreate, setModalCreate] = useState(false)
     const [modalUpdate, setModalUpdate] = useState(false)
     const [modalConfirmCancel, setModalConfirmCancel] = useState(false)
+    const [modalFilters, setModalFilters] = useState(false)
+
     const currentEdit = useRef(null)
     const currentIndex = useRef(null)
 
-    const addTaskFunction = async () => {
-        Geolocation.getCurrentPosition(
-            (position) => {
-                addTask({
-                    title: taskName ? taskName : "",
-                    isComplete: false,
-                    createDateTime: moment().format('MMMM Do YYYY, h:mm:ss a'),
-                    lastUpdate: moment().format('MMMM Do YYYY, h:mm:ss a'),
-                    location: { lat: position.coords.latitude, lng: position.coords.longitude }
-                })
-                setTaskName(null)
-                setModal(false)
-            },
-            (error) => {
-                temp = false;
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-        );
+    // Funcion que agrega la Task
+    const handleAdd = async () => {
+        if (taskName) {
+            Geolocation.getCurrentPosition(
+                (position) => {
+                    addTask({
+                        title: taskName ? taskName : "",
+                        isComplete: false,
+                        createDateTime: moment().format('MMMM Do YYYY, h:mm:ss a'),
+                        lastUpdate: moment().format('MMMM Do YYYY, h:mm:ss a'),
+                        location: { lat: position.coords.latitude, lng: position.coords.longitude }
+                    })
+                    setTaskName(null)
+                    setModalCreate(false)
+                },
+                (error) => {
+                    temp = false;
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+            );
+        } else {
+            Alert.alert(
+                "Invalido",
+                "La Tarea debe de tener como minimo 1 Caracter"
+            );
+        }
     }
 
-    const handleEdit = (index) => {
+    // Funcion para Ver la Informacion a Editar
+    const handleModalEdit = (index) => {
         currentIndex.current = index
         currentEdit.current = allTasks[index]
         setTaskNameEdit(currentEdit.current.taskInfo.title)
         setModalUpdate(true)
     }
 
-    const submitStatusChange = (index) => {
-        currentEdit.current = allTasks[index]
-        completeTask([index, !currentEdit.current.taskInfo.isComplete])
-        setModalUpdate(false)
-    }
-
-    const submitEdit = () => {
+    // Funcion Para Editar la TArea
+    const handleEditTask = () => {
         if (taskNameEdit) {
             editTask([currentIndex.current, {
                 id: currentEdit.current.id, taskInfo: {
@@ -76,31 +95,66 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
             setModalUpdate(false)
         }
         else {
-            console.log("Tiene que ser mayor a 20")
+            Alert.alert(
+                "Invalido",
+                "La Tarea debe de tener como minimo 1 Caracter"
+            );
         }
     }
 
+    // Funcion para Cambiar la Tarea a Completado o No Completado
+    const handleChangeStatus = (index) => {
+        currentEdit.current = allTasks[index]
+        completeTask([index, !currentEdit.current.taskInfo.isComplete])
+        setModalUpdate(false)
+    }
+
+    // Funciona para Eliminar Tareas
     const handleCancel = () => {
         cancelTask(currentEdit.current.id)
         setModalUpdate(false)
         setModalConfirmCancel(false)
     }
 
+    // Funcion para Filtros
+    const handelChangeFilter = (filter) => {
+        setFilter(filter)
+    }
+
     return (
 
         <View style={{ height }}>
-            <AppBar />
-            <AddButton onPress={() => { setModal(true) }} />
+            <AppBar onPress={() => setModalFilters(true)} />
+            <AddButton onPress={() => { setModalCreate(true) }} />
 
             {allTasks &&
                 allTasks.map((task, index) => (
-                    <TaskCard
-                        key={index}
-                        taskStatus={task.taskInfo.isComplete}
-                        taskName={task.taskInfo.title}
-                        checkProp={() => { submitStatusChange(index) }}
-                        editProp={() => { handleEdit(index) }}
-                    />
+                    filter == 1 ?
+                        <TaskCard
+                            key={index}
+                            taskStatus={task.taskInfo.isComplete}
+                            taskName={task.taskInfo.title}
+                            checkProp={() => { handleChangeStatus(index) }}
+                            editProp={() => { handleModalEdit(index) }}
+                        />
+                        :
+                        filter == 2 && !task.taskInfo.isComplete ?
+                            < TaskCard
+                                key={index}
+                                taskStatus={task.taskInfo.isComplete}
+                                taskName={task.taskInfo.title}
+                                checkProp={() => { handleChangeStatus(index) }}
+                                editProp={() => { handleModalEdit(index) }}
+                            />
+                            :
+                            filter == 3 && task.taskInfo.isComplete &&
+                            < TaskCard
+                                key={index}
+                                taskStatus={task.taskInfo.isComplete}
+                                taskName={task.taskInfo.title}
+                                checkProp={() => { handleChangeStatus(index) }}
+                                editProp={() => { handleModalEdit(index) }}
+                            />
                 ))
             }
 
@@ -108,13 +162,13 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
             <Modal
                 animationType="fade"
                 transparent={true}
-                visible={modal}
-                onRequestClose={() => { setModal(false) }}>
+                visible={modalCreate}
+                onRequestClose={() => { setModalCreate(false) }}>
                 <TouchableOpacity
-                    style={styles.centeredView}
-                    onPress={() => { setModal(false) }}>
+                    style={styles.modalOpacityStyle}
+                    onPress={() => { setModalCreate(false) }}>
                     <TouchableWithoutFeedback>
-                        <View style={styles.modalView}>
+                        <View style={styles.modalViewStyle}>
                             <Text style={styles.modalTitle}>Agregar Nueva Tarea</Text>
                             <TextInput
                                 placeholder={'Nombre de la Tarea'}
@@ -125,7 +179,7 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
                             <Button
                                 title="Agregar"
                                 color="#3366FF"
-                                onPress={addTaskFunction} />
+                                onPress={handleAdd} />
                         </View>
                     </TouchableWithoutFeedback>
                 </TouchableOpacity>
@@ -137,9 +191,9 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
                 transparent={true}
                 visible={modalUpdate}
                 onRequestClose={() => { setModalUpdate(false) }}>
-                <TouchableOpacity style={styles.centeredView} onPress={() => { setModalUpdate(false) }}>
+                <TouchableOpacity style={styles.modalOpacityStyle} onPress={() => { setModalUpdate(false) }}>
                     <TouchableWithoutFeedback>
-                        <View style={styles.modalView}>
+                        <View style={styles.modalViewStyle}>
                             <Text style={styles.modalTitle}>Editar Tarea</Text>
                             <Text style={styles.headerInfo}>Titulo de la Tarea</Text>
                             <TextInput
@@ -174,12 +228,12 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
                             <Button
                                 title="Guardar"
                                 color="#3366FF"
-                                onPress={submitEdit}
+                                onPress={handleEditTask}
                             />
 
                             <View style={{ marginTop: 20 }}>
                                 <Button
-                                    title="Cancelar"
+                                    title="Eliminar"
                                     color="#FF493F"
                                     onPress={() => { setModalConfirmCancel(true) }}
                                 />
@@ -221,38 +275,117 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
                     </TouchableWithoutFeedback>
                 </TouchableOpacity>
             </Modal>
+
+            {/* Filters Modal */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalFilters}
+            >
+                <TouchableOpacity style={styles.modalFiltersBack} onPress={() => { setModalFilters(false) }}>
+                    <TouchableWithoutFeedback>
+                        <View style={styles.modalFilters}>
+                            <Text style={styles.bold}>Filtros</Text>
+                            <View style={styles.modalFiltersSwitch}>
+                                <View style={{ marginRight: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Text style={styles.bold}>Todos</Text>
+                                    <Switch
+                                        trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                        thumbColor={filter == 1 ? "#3366FF" : "#f4f3f4"}
+                                        // ios_backgroundColor="#3e3e3e"
+                                        onValueChange={() => { handelChangeFilter(1) }}
+                                        value={filter == 1 ? true : false}
+                                    />
+                                </View>
+                                <View style={{ marginRight: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Text style={styles.bold}>Activos</Text>
+                                    <Switch
+                                        trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                        thumbColor={filter == 2 ? "#3366FF" : "#f4f3f4"}
+                                        // ios_backgroundColor="#3e3e3e"
+                                        onValueChange={() => { handelChangeFilter(2) }}
+                                        value={filter == 2 ? true : false}
+                                    />
+                                </View>
+                                <View style={{ marginRight: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Text style={styles.bold}>Completados</Text>
+                                    <Switch
+                                        trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                        thumbColor={filter == 3 ? "#3366FF" : "#f4f3f4"}
+                                        // ios_backgroundColor="#3e3e3e"
+                                        onValueChange={() => { handelChangeFilter(3) }}
+                                        value={filter == 3 ? true : false}
+                                    />
+                                </View>
+                            </View>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </TouchableOpacity>
+            </Modal>
+
         </View>
+
     );
 }
 
 const styles = StyleSheet.create({
-    centeredView: {
+    modalOpacityStyle: {
         flex: 1,
         justifyContent: 'flex-end',
         margin: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
     },
-    modalView: {
+    modalViewStyle: {
         backgroundColor: 'white',
         padding: 22,
         borderTopRightRadius: 17,
         borderTopLeftRadius: 17,
     },
-    textInput: { height: 50, borderColor: 'blue', borderWidth: 2, borderRadius: 10, color: 'black', marginBottom: 20 },
+    textInput: {
+        height: 50,
+        borderColor: 'blue',
+        borderWidth: 2,
+        borderRadius: 10,
+        color: 'black',
+        marginBottom: 20
+    },
     modalTitle: {
         fontWeight: 'bold',
         fontSize: 20,
         alignSelf: 'center',
         marginBottom: 20
     },
-    headerInfo: { alignSelf: 'flex-start', fontWeight: 'bold' },
-    space: { marginBottom: 10 },
+    headerInfo: {
+        alignSelf: 'flex-start',
+        fontWeight: 'bold'
+    },
+    space: {
+        marginBottom: 10
+    },
     modalConfirm: {
         margin: 20,
         backgroundColor: "white",
         borderRadius: 20,
         padding: 35,
         alignItems: "center"
+    },
+    modalFilters: {
+        margin: 10,
+        marginTop: 60,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center"
+    },
+    modalFiltersBack: {
+        flex: 1,
+        alignItems: 'flex-end',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    },
+    modalFiltersSwitch: {
+        marginTop: 20,
+        justifyContent: 'space-between',
+        flexDirection: 'column'
     },
     backPressCancel: {
         flex: 1,
@@ -261,8 +394,14 @@ const styles = StyleSheet.create({
         marginTop: 22,
         backgroundColor: 'rgba(0, 0, 0, 0.8)'
     },
-    bold: { fontWeight: 'bold' },
-    viewCancel: { marginTop: 20, justifyContent: 'space-between', flexDirection: 'row' }
+    bold: {
+        fontWeight: 'bold'
+    },
+    viewCancel: {
+        marginTop: 20,
+        justifyContent: 'space-between',
+        flexDirection: 'row'
+    }
 });
 
 export default connect(

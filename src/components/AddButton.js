@@ -9,20 +9,20 @@ function taskCard(props) {
     return (
         <TouchableOpacity
             onPress={onPress}
-            underlayColor="#2882D8"
+            underlayColor="#3366FF"
             style={{
                 zIndex: 999,
                 position: 'absolute',
-                top: height * 0.85,
-                left: width * 0.78,
                 alignItems: 'center',
+                bottom: height * 0.1,
+                right:0,
                 justifyContent: 'center',
                 width: 80,
                 height: 80,
                 borderRadius: 80 / 2,
                 borderColor: "#000",
                 borderWidth: 3,
-                backgroundColor: 'red',
+                backgroundColor: '#3366FF',
             }}>
 
             <Fontisto name='plus-a' size={30} />

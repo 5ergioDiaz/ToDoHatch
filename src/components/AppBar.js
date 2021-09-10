@@ -4,15 +4,17 @@ import Feather from 'react-native-vector-icons/Feather'
 
 const { width, height } = Dimensions.get("screen");
 
-function taskCard() {
+function taskCard(props) {
+    const { onPress } = props;
+
     return (
-        <View style={{ backgroundColor: 'red', height: height / 15, width: '100%', marginBottom: 20 }}>
-            <View style={{ flexDirection: 'row', alignContent: 'space-between', marginTop: 20, marginLeft: 30 }}>
+        <View style={{ backgroundColor: '#3366FF', height: width * 0.13, marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', alignContent: 'space-between', marginTop: width*0.02, marginLeft: 30 }}>
                 <View style={{ width: '90%', alignItems: 'center' }}>
-                    <Text numberOfLines={1} style={{ fontSize: 20 }}>Mis Tareas</Text>
+                    <Text numberOfLines={1} style={{ fontSize: width*0.05 }}>Mis Tareas</Text>
                 </View>
                 <View style={{ alignContent: 'flex-end', width: '10%' }}>
-                    <Feather name='more-vertical' size={25} />
+                    <Feather name='more-vertical' size={width*0.08} onPress={onPress} />
                 </View>
             </View>
         </View>

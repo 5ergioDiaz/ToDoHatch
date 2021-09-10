@@ -26,7 +26,7 @@ export default function (state = initialState, action) {
       state.allTasks[taskInfo[0]].taskInfo.isComplete = taskInfo[1]
       return {
         ...state,
-        allTasks: state.allTasks
+        allTasks: [...state.allTasks]
       };
     }
     case CANCEL_TASK: {
