@@ -23,9 +23,9 @@ const allTasksProps = (state) => {
 }
 const propsDispatch = { addTask}
 
-const HomeScreen = ({ allTasks}) => {
+const HomeScreen = ({ allTasks, addTask}) => {
 
-    const [modal, setModal] = useState(false)
+    const [taskName, setTaskName] = useState(null)
 
     useEffect(() => {
         PermissionsAndroid.requestMultiple([
@@ -48,7 +48,27 @@ const HomeScreen = ({ allTasks}) => {
         })
     }, []);
 
-   
+    const addTaskFunction = async () => {
+        Geolocation.getCurrentPosition(
+            (position) => {
+                addTask({
+                    title: taskName ? taskName : "",
+                    isComplete: false,
+                    createDateTime: moment().format('MMMM Do YYYY, h:mm:ss a'),
+                    lastUpdate: moment().format('MMMM Do YYYY, h:mm:ss a'),
+                    location: { lat: position.coords.latitude, lng: position.coords.longitude }
+                })
+                setTaskName(null)
+                setModal(false)
+            },
+            (error) => {
+                temp = false;
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+    }
+
+
     return (
 
         <View style={{ height }}>
@@ -81,7 +101,42 @@ const HomeScreen = ({ allTasks}) => {
                     </View>
                 ))
             }
-           </View>
+            {/* Modal Create */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modal}
+                onRequestClose={() => { setModal(false) }}>
+                <TouchableOpacity style={styles.centeredView} onPress={() => { setModal(false) }}>
+                    <TouchableWithoutFeedback>
+                        <View style={styles.modalView}>
+                            <Text style={{
+                                fontWeight: 'bold',
+                                fontSize: 20
+                            }}>Nueva Tarea</Text>
+                            <TextInput
+                                placeholder={'Nombre de la Tarea'}
+                                placeholderTextColor={'black'}
+                                style={{ height: 60, width: '90%', borderColor: 'blue', borderWidth: 2, borderRadius: 10, color: 'black', marginBottom: 30 }}
+                                onChangeText={setTaskName}
+                                value={taskName}
+                            />
+                            <Button1
+                                label={"Agregar"}
+                                backgroundColor={'red'}
+                                borderRadius={10}
+                                width={"90%"}
+                                onPress={addTaskFunction}
+                                height={40}
+                                fontSize={25}
+                            />
+                        </View>
+                    </TouchableWithoutFeedback>
+                </TouchableOpacity>
+            </Modal>
+
+
+        </View>
     );
 }
 
