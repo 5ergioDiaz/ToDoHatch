@@ -13,6 +13,7 @@ import HomeScreen from './src/screens/HomeScreen'
 
 const App = () => {
 
+  // Se piden los permisos para poder acceder a la ubicacion del telefono
   useEffect(() => {
     PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,

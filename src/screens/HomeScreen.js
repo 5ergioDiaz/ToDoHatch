@@ -44,11 +44,13 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
     const currentEdit = useRef(null)
     const currentIndex = useRef(null)
 
-    // Funcion que agrega la Task
+    // Funcion que agrega la Tarea
     const handleAdd = async () => {
         if (taskName) {
+            // Se manda a llamar a la funcion para obtener la ubicación
             Geolocation.getCurrentPosition(
                 (position) => {
+                    // Se manda a llamar a la función para agregar la Tarea al Array de Tareas
                     addTask({
                         title: taskName ? taskName : "",
                         isComplete: false,
@@ -65,6 +67,7 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
             );
         } else {
+            // Si no se agrego un Caracter se avisa al usuario
             Alert.alert(
                 "Invalido",
                 "La Tarea debe de tener como minimo 1 Caracter"
@@ -74,6 +77,7 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
 
     // Funcion para Ver la Informacion a Editar
     const handleModalEdit = (index) => {
+        // Se Guarda la Informacion de la Tarea que el Usuario quiere ver o editar
         currentIndex.current = index
         currentEdit.current = allTasks[index]
         setTaskNameEdit(currentEdit.current.taskInfo.title)
@@ -83,6 +87,7 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
     // Funcion Para Editar la TArea
     const handleEditTask = () => {
         if (taskNameEdit) {
+            // Se manda a llamar a la funcion para editar la Tarea y se actualiza el nombre si hubo un cambio y se actualiza la ultima actualizacion
             editTask([currentIndex.current, {
                 id: currentEdit.current.id, taskInfo: {
                     title: taskNameEdit ? taskNameEdit : currentEdit.current.taskInfo.title,
@@ -104,6 +109,7 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
 
     // Funcion para Cambiar la Tarea a Completado o No Completado
     const handleChangeStatus = (index) => {
+        // Se manda a llamar la funcion para actualizar el status de la tarea
         currentEdit.current = allTasks[index]
         completeTask([index, !currentEdit.current.taskInfo.isComplete])
         setModalUpdate(false)
@@ -111,7 +117,7 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
 
     // Funciona para Eliminar Tareas
     const handleCancel = () => {
-        cancelTask(currentEdit.current.id)
+        cancelTask(currentIndex.current)
         setModalUpdate(false)
         setModalConfirmCancel(false)
     }
@@ -124,9 +130,14 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
     return (
 
         <View style={{ height }}>
+
+            {/* Componente de la NavVar */}
             <AppBar onPress={() => setModalFilters(true)} />
+
+            {/* Componente del Boton para Agregar Tareas */}
             <AddButton onPress={() => { setModalCreate(true) }} />
 
+            {/* Funcion de Map para recorrer todo el Array de Tareas y se filtra dependiendo si el usuario quiere ver todas las tareas, solo las activas o completadas */}
             {allTasks &&
                 allTasks.map((task, index) => (
                     filter == 1 ?
@@ -292,7 +303,6 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
                                     <Switch
                                         trackColor={{ false: "#767577", true: "#81b0ff" }}
                                         thumbColor={filter == 1 ? "#3366FF" : "#f4f3f4"}
-                                        // ios_backgroundColor="#3e3e3e"
                                         onValueChange={() => { handelChangeFilter(1) }}
                                         value={filter == 1 ? true : false}
                                     />
@@ -302,7 +312,6 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
                                     <Switch
                                         trackColor={{ false: "#767577", true: "#81b0ff" }}
                                         thumbColor={filter == 2 ? "#3366FF" : "#f4f3f4"}
-                                        // ios_backgroundColor="#3e3e3e"
                                         onValueChange={() => { handelChangeFilter(2) }}
                                         value={filter == 2 ? true : false}
                                     />
@@ -312,7 +321,6 @@ const HomeScreen = ({ allTasks, addTask, cancelTask, editTask, completeTask }) =
                                     <Switch
                                         trackColor={{ false: "#767577", true: "#81b0ff" }}
                                         thumbColor={filter == 3 ? "#3366FF" : "#f4f3f4"}
-                                        // ios_backgroundColor="#3e3e3e"
                                         onValueChange={() => { handelChangeFilter(3) }}
                                         value={filter == 3 ? true : false}
                                     />
